@@ -12,7 +12,7 @@ onMounted(() => {
     animation : false,//是否创建动画小器件，左下角仪表    
     baseLayerPicker : false,//是否显示图层选择器    
     fullscreenButton : false,//是否显示全屏按钮    
-    geocoder : false,//是否显示geocoder小器件，右上角查询按钮    
+    geocoder : true,//是否显示geocoder小器件，右上角查询按钮    
     homeButton : false,//是否显示Home按钮    
     infoBox : false,//是否显示信息框    
     sceneModePicker : false,//是否显示3D/2D选择器    
@@ -24,21 +24,22 @@ onMounted(() => {
     selectedImageryProviderViewModel : undefined,//当前图像图层的显示模型，仅baseLayerPicker设为true有意义    
     imageryProviderViewModels : Cesium.createDefaultImageryProviderViewModels(),//可供BaseLayerPicker选择的图像图层ProviderViewModel数组    
     selectedTerrainProviderViewModel : undefined,//当前地形图层的显示模型，仅baseLayerPicker设为true有意义    
-    terrainProviderViewModels : Cesium.createDefaultTerrainProviderViewModels(),//可供BaseLayerPicker选择的地形图层ProviderViewModel数组    
-    imageryProvider : new BaiduImageryProvider({
-        url: "http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1"
-    }), // 图像图层提供者，仅baseLayerPicker设为false有意义
+    terrainProviderViewModels : Cesium.createDefaultTerrainProviderViewModels(),//可供BaseLayerPicker选择的地形图层ProviderViewModel数组   
+    // 百度地图坐标有偏移，暂时不用 
+    // imageryProvider : new BaiduImageryProvider({
+    //     url: "http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1"
+    // }), // 图像图层提供者，仅baseLayerPicker设为false有意义
     terrainProvider : new Cesium.EllipsoidTerrainProvider(),//地形图层提供者，仅baseLayerPicker设为false有意义    
-    skyBox : new Cesium.SkyBox({    
-        sources : {    
-          positiveX : 'Cesium-1.7.1/Skybox/px.jpg',    
-          negativeX : 'Cesium-1.7.1/Skybox/mx.jpg',    
-          positiveY : 'Cesium-1.7.1/Skybox/py.jpg',    
-          negativeY : 'Cesium-1.7.1/Skybox/my.jpg',    
-          positiveZ : 'Cesium-1.7.1/Skybox/pz.jpg',    
-          negativeZ : 'Cesium-1.7.1/Skybox/mz.jpg'    
-        }    
-    }),//用于渲染星空的SkyBox对象    
+    // skyBox : new Cesium.SkyBox({    
+    //     sources : {    
+    //       positiveX : 'Cesium-1.7.1/Skybox/px.jpg',    
+    //       negativeX : 'Cesium-1.7.1/Skybox/mx.jpg',    
+    //       positiveY : 'Cesium-1.7.1/Skybox/py.jpg',    
+    //       negativeY : 'Cesium-1.7.1/Skybox/my.jpg',    
+    //       positiveZ : 'Cesium-1.7.1/Skybox/pz.jpg',    
+    //       negativeZ : 'Cesium-1.7.1/Skybox/mz.jpg'    
+    //     }    
+    // }),//用于渲染星空的SkyBox对象    
     fullscreenElement : document.body,//全屏时渲染的HTML元素,    
     useDefaultRenderLoop : true,// 如果需要控制渲染循环，则设为true    
     targetFrameRate : undefined,// 使用默认render loop时的帧率    
@@ -84,6 +85,31 @@ onMounted(() => {
       }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   
+
+  var modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
+    Cesium.Cartesian3.fromDegrees(104.063337, 30.537482, 0.0));
+    // Cesium.Cartesian3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0));
+  
+  viewer.extend(Cesium.viewerCesiumInspectorMixin);
+  var model = viewer.scene.primitives.add(Cesium.Model.fromGltf({
+      url : './chengdu-ruanjianyuan.gltf',
+      modelMatrix : modelMatrix,
+      scale : 1
+  }));
+
+  // 导入数据莫名的旋转了90度，给旋转回来
+  /*获取3D model 的旋转矩阵modelMatrix*/
+  let m = model.modelMatrix;
+  //构建一个三阶旋转矩阵。模型旋转一定的角度，fromRotation[Z]来控制旋转轴，toRadians()为旋转角度，转为弧度再参与运算
+  let m1 = Cesium.Matrix3.fromRotationZ(Cesium.Math.toRadians(-90));
+  //矩阵计算
+  Cesium.Matrix4.multiplyByMatrix3(m,m1,m);
+  //将计算结果再赋值给modelMatrix
+  model.modelMatrix = m;
+
+  viewer.camera.flyTo({  
+      destination : Cesium.Cartesian3.fromDegrees(104.063337, 30.537482, 6000.0)     //相机飞入点
+  }); 
 
 })
 </script>
