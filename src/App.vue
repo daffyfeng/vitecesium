@@ -26,9 +26,9 @@ onMounted(() => {
     selectedTerrainProviderViewModel : undefined,//当前地形图层的显示模型，仅baseLayerPicker设为true有意义    
     terrainProviderViewModels : Cesium.createDefaultTerrainProviderViewModels(),//可供BaseLayerPicker选择的地形图层ProviderViewModel数组   
     // 百度地图坐标有偏移，暂时不用 
-    // imageryProvider : new BaiduImageryProvider({
-    //     url: "http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1"
-    // }), // 图像图层提供者，仅baseLayerPicker设为false有意义
+    imageryProvider : new BaiduImageryProvider({
+        url: "http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1"
+    }), // 图像图层提供者，仅baseLayerPicker设为false有意义
     terrainProvider : new Cesium.EllipsoidTerrainProvider(),//地形图层提供者，仅baseLayerPicker设为false有意义    
     // skyBox : new Cesium.SkyBox({    
     //     sources : {    
@@ -87,7 +87,8 @@ onMounted(() => {
   
 
   var modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
-    Cesium.Cartesian3.fromDegrees(104.063337, 30.537482, 0.0));
+    // Cesium.Cartesian3.fromDegrees(104.063337, 30.537482, 0.0)); // wgs84
+    Cesium.Cartesian3.fromDegrees(104.072237, 30.528982, 0.0)); // 百度
     // Cesium.Cartesian3.fromDegrees(-75.62898254394531, 40.02804946899414, 0.0));
   
   viewer.extend(Cesium.viewerCesiumInspectorMixin);
@@ -108,7 +109,13 @@ onMounted(() => {
   model.modelMatrix = m;
 
   viewer.camera.flyTo({  
-      destination : Cesium.Cartesian3.fromDegrees(104.063337, 30.537482, 6000.0)     //相机飞入点
+      // destination : Cesium.Cartesian3.fromDegrees(104.063337, 30.537482, 6000.0),     // wgs84 相机飞入点
+      destination : Cesium.Cartesian3.fromDegrees(104.072887, 30.525982, 200.0),     // 百度相机飞入点
+      orientation : {
+        heading : Cesium.Math.toRadians(20),
+        pitch : Cesium.Math.toRadians(-15),
+        roll : 0
+      }
   }); 
 
 })
